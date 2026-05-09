@@ -28,7 +28,7 @@ export async function action({ request }: Route.ActionArgs) {
   const db = database();
   try {
     await db.insert(schema.guestBook).values({ name, email });
-  } catch (error) {
+  } catch (_error) {
     return { guestBookError: "Error adding to guest book" };
   }
 }
