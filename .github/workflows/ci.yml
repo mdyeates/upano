@@ -1,0 +1,78 @@
+# GitHub Actions CI workflow.
+name: CI
+
+# Defines the triggers that cause this workflow to be enqueued.
+# Docs: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#on
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancels in-progress runs of the same workflow on the same ref.
+# when a new commit lands. Useful for protecting against CI drift.
+# Docs: https://docs.github.com/en/actions/using-jobs/using-concurrency
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Defines the actual work to be done.
+# Each job runs on a fresh runner (VM) by default, in parallel where possible.
+# Docs: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobs
+jobs:
+  check:
+    name: Lint, format, typecheck, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # Docs: https://github.com/actions/checkout
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Docs: https://github.com/actions/setup-node
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Clean install dependencies exactly as locked in package-lock.json.
+      # `npm ci` (not `npm install`) is mandatory in CI because:
+      #   - It refuses to run if package.json and package-lock.json disagree.
+      #   - It deletes node_modules first, fully reproducible install.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run aggregate check (typecheck + lint + format + test)
+        run: npm run check
+
+      - name: Build (production bundle)
+        run: npm run build
+
+  # Smoke-build the Dockerfile so we catch container-level breaks
+  # before they reach a deploy.
+  docker:
+    name: Docker image smoke build
+    runs-on: ubuntu-latest
+    # If `check` fails, this job is skipped (no point smoke-testing Docker)
+    # Docs: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds
+    needs: check
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The classic `docker build` command does NOT support this.
+      # Docs: https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
