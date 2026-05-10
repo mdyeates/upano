@@ -1,0 +1,46 @@
+# Database migration workflow.
+# When code lands on `main`, this runs `npm run db:migrate` against the
+# production Neon Postgres database, keeping the live schema in sync with
+# the migrations committed in `drizzle/`.
+
+name: Migrate database
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One migration at a time, ever. Two parallel runs against the same Postgres
+# would race on `drizzle.__drizzle_migrations` and corrupt the journal.
+# False makes new runs queue instead of cancelling, 
+concurrency:
+  group: migrate-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Run drizzle-kit migrate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    # Production references GitHub environment.
+    # Docs: https://docs.github.com/en/actions/deployment/targeting-different-environments
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Apply any pending migrations in `drizzle/` to the prod database.
+      - name: Apply migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:migrate
