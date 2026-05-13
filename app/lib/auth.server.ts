@@ -1,0 +1,194 @@
+/**
+ * Server-side auth helpers for Neon Auth.
+ *
+ * Why a server module: our /login, /register, and /logout routes use
+ * RR7 actions to forward credentials to Neon Auth's REST API. Doing
+ * this server-side instead of client-side gives us:
+ *   - Zod schema validation that runs on the server.
+ *   - No risk of accidentally leaking API credentials to the client.
+ *   - Forms that work without JS.
+ *   - Loader-level redirects so /dashboard never flashes for logged-out
+ *     users (server redirects before any HTML ships).
+ */
+import { redirect } from "react-router";
+
+const AUTH_URL = process.env.VITE_NEON_AUTH_URL;
+
+function originFor(request: Request): string {
+  const proto = request.headers.get("x-forwarded-proto");
+  const host =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (proto && host) return `${proto}://${host}`;
+  return new URL(request.url).origin;
+}
+
+if (!AUTH_URL) {
+  console.error("VITE_NEON_AUTH_URL is not set. Auth REST calls will fail.");
+}
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  name?: string;
+  image?: string | null;
+};
+
+export type AuthSession = {
+  user: AuthUser;
+  session: Record<string, unknown>;
+};
+
+/**
+ * Forward the inbound request's Cookie header to Neon Auth so it can
+ * verify the session. Returns null if no session.
+ */
+export async function getSession(
+  request: Request,
+): Promise<AuthSession | null> {
+  if (!AUTH_URL) return null;
+  const cookie = request.headers.get("cookie");
+  if (!cookie) return null;
+
+  const upstream = await fetch(`${AUTH_URL}/get-session`, {
+    method: "GET",
+    headers: {
+      cookie,
+      origin: originFor(request),
+    },
+  });
+  if (!upstream.ok) return null;
+  const body = (await upstream.json()) as AuthSession | null;
+  return body;
+}
+
+/**
+ * Redirects to /login if no session.
+ * Throwing the redirect is RR7 idiomatic: it short-circuits the
+ * loader and the framework treats it as a normal navigation.
+ */
+export async function requireUser(request: Request): Promise<AuthUser> {
+  const session = await getSession(request);
+  if (!session?.user) {
+    const url = new URL(request.url);
+    const next = url.pathname + url.search;
+    throw redirect(`/login?next=${encodeURIComponent(next)}`);
+  }
+  return session.user;
+}
+
+/**
+ * POST credentials to Neon Auth's REST API.
+ */
+export async function postAuth(
+  request: Request,
+  path: "/sign-in/email" | "/sign-up/email" | "/sign-out",
+  body: Record<string, unknown>,
+): Promise<{ status: number; body: AuthApiBody; setCookie: string | null }> {
+  if (!AUTH_URL) {
+    return {
+      status: 500,
+      body: { code: "AUTH_NOT_CONFIGURED", message: "Auth URL is missing." },
+      setCookie: null,
+    };
+  }
+  const upstream = await fetch(`${AUTH_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      origin: originFor(request),
+      // Forward existing cookies so /sign-out can identify the session.
+      ...(request.headers.get("cookie")
+        ? { cookie: request.headers.get("cookie") as string }
+        : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  // Neon's responses always look like { code, message } on error or
+  // { user, token, ... } on success.
+  let parsed: AuthApiBody;
+  try {
+    parsed = (await upstream.json()) as AuthApiBody;
+  } catch {
+    parsed = {
+      code: "BAD_RESPONSE",
+      message: "Auth backend returned non-JSON.",
+    };
+  }
+  return {
+    status: upstream.status,
+    body: parsed,
+    setCookie: upstream.headers.get("set-cookie"),
+  };
+}
+
+export type AuthApiBody = {
+  code?: string;
+  message?: string;
+  user?: AuthUser;
+  token?: string;
+};
+
+/**
+ * Maps Neon Auth error codes to our internal user-friendly messages.
+ */
+export function mapAuthError(
+  status: number,
+  body: AuthApiBody,
+): { code: AuthErrorCode; message: string } {
+  const code = body.code ?? "UNKNOWN";
+  switch (code) {
+    case "USER_ALREADY_EXISTS":
+    case "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL":
+    case "USER_EMAIL_EXISTS":
+      return {
+        code: "USER_ALREADY_EXISTS",
+        message:
+          "An account with that email already exists. Try logging in instead.",
+      };
+    case "INVALID_EMAIL_OR_PASSWORD":
+    case "INVALID_CREDENTIALS":
+      return {
+        code: "INVALID_EMAIL_OR_PASSWORD",
+        message: "Email or password is incorrect.",
+      };
+    case "INVALID_EMAIL":
+      return { code: "INVALID_EMAIL", message: "That email isn’t valid." };
+    case "PASSWORD_TOO_SHORT":
+      return {
+        code: "PASSWORD_TOO_SHORT",
+        message: "Password must be at least 8 characters.",
+      };
+    case "RATE_LIMIT_EXCEEDED":
+      return {
+        code: "RATE_LIMIT_EXCEEDED",
+        message: "Too many attempts. Wait a minute and try again.",
+      };
+    default:
+      // Fall back to the upstream message if we don't have a mapped one (dev)
+      return {
+        code: "UNKNOWN",
+        message:
+          body.message ??
+          (status >= 500
+            ? "Auth service is temporarily unavailable."
+            : "Couldn’t complete the request."),
+      };
+  }
+}
+
+export type AuthErrorCode =
+  | "USER_ALREADY_EXISTS"
+  | "INVALID_EMAIL_OR_PASSWORD"
+  | "INVALID_EMAIL"
+  | "PASSWORD_TOO_SHORT"
+  | "RATE_LIMIT_EXCEEDED"
+  | "UNKNOWN";
+
+/**
+ * Build response headers that forward Neon's Set-Cookie to the
+ * browser.
+ */
+export function authCookieHeaders(setCookie: string | null): HeadersInit {
+  if (!setCookie) return {};
+  return { "set-cookie": setCookie };
+}
