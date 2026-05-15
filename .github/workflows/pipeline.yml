@@ -1,5 +1,15 @@
-# GitHub Actions CI workflow.
-name: CI
+# GitHub Actions Pipeline workflow.
+#
+# Single pipeline that:
+#   1. Checks code quality (typecheck, lint, format, tests)
+#   2. Smoke-builds the Docker image so we catch container breaks
+#      before they reach a deploy
+#   3. On main pushes, after both checks pass, deploys to Render
+#
+# The deploy job is gated on the `production` GitHub environment so
+# the required-reviewer rule (configured in repo Settings →
+# Environments) applies before any new code reaches the live site.
+name: Pipeline
 
 # Defines the triggers that cause this workflow to be enqueued.
 # Docs: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#on
@@ -9,11 +19,11 @@ on:
   pull_request:
     branches: [main]
 
-# Cancels in-progress runs of the same workflow on the same ref.
-# when a new commit lands. Useful for protecting against CI drift.
+# Cancels in-progress runs of the same workflow on the same ref
+# when a new commit lands. Useful for protecting against drift.
 # Docs: https://docs.github.com/en/actions/using-jobs/using-concurrency
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: pipeline-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 # Defines the actual work to be done.
@@ -76,3 +86,28 @@ jobs:
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # Deploy to Render after CI passes. Only runs on pushes to main —
+  # PRs build + test but don't deploy.
+  deploy:
+    name: Deploy to Render (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Both quality + Docker smoke must pass before we touch production.
+    # Docs: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds
+    needs: [check, docker]
+    # Skip on PRs — only deploy on direct merges to main.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Docs: https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment
+    environment:
+      name: production
+      url: https://upano.onrender.com
+
+    steps:
+      # Docs: https://github.com/JorgeLNJunior/render-deploy
+      - name: Trigger Render deploy
+        uses: JorgeLNJunior/render-deploy@v1.5.0
+        with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          wait_deploy: true

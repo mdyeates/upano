@@ -11,7 +11,7 @@ on:
 
 # One migration at a time, ever. Two parallel runs against the same Postgres
 # would race on `drizzle.__drizzle_migrations` and corrupt the journal.
-# False makes new runs queue instead of cancelling, 
+# False makes new runs queue instead of cancelling,
 concurrency:
   group: migrate-${{ github.workflow }}
   cancel-in-progress: false
