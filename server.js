@@ -35,8 +35,9 @@ app.use(
         "default-src": ["'self'"],
         "script-src": [
           "'self'",
-          // Vite dev mode needs eval for HMR.
-          ...(DEVELOPMENT ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
+          "'unsafe-inline'",
+          // Vite dev mode also needs eval for HMR.
+          ...(DEVELOPMENT ? ["'unsafe-eval'"] : []),
         ],
         "style-src": [
           "'self'",
