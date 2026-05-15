@@ -4,6 +4,7 @@ import { AuthFormError, AuthPageShell } from "~/components/auth/auth-shell";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { MultiStepForm } from "~/components/uselayouts/multi-step-form";
+import { LOGIN_COPY } from "~/content/auth";
 import { loginSchema, type LoginValues } from "~/lib/auth-schemas";
 import {
   authCookieHeaders,
@@ -16,8 +17,8 @@ import type { Route } from "./+types/login";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Upano - Login" },
-    { name: "description", content: "Log in to Upano." },
+    { title: LOGIN_COPY.meta.title },
+    { name: "description", content: LOGIN_COPY.meta.description },
   ];
 }
 
@@ -83,13 +84,9 @@ export default function LoginPage() {
 
   return (
     <AuthPageShell
-      title="Welcome back"
-      description="Log in to your Upano account."
-      altAction={{
-        prompt: "Need an account?",
-        linkLabel: "Create one",
-        to: "/register",
-      }}
+      title={LOGIN_COPY.shell.title}
+      description={LOGIN_COPY.shell.description}
+      altAction={LOGIN_COPY.shell.altAction}
     >
       <MultiStepForm<LoginValues>
         schema={loginSchema}
@@ -100,12 +97,12 @@ export default function LoginPage() {
         }}
         submitting={submitting}
         labels={{
-          finish: "Login",
+          finish: LOGIN_COPY.submitLabel,
         }}
         steps={[
           {
-            title: "Sign in",
-            description: "Use your work email and password.",
+            title: LOGIN_COPY.step.title,
+            description: LOGIN_COPY.step.description,
             render: (form) => {
               const errors = form.formState.errors;
               const serverFieldErrors = (actionData?.fieldErrors ??
@@ -113,12 +110,14 @@ export default function LoginPage() {
               return (
                 <>
                   <Field>
-                    <FieldLabel htmlFor="login-email">Work email</FieldLabel>
+                    <FieldLabel htmlFor="login-email">
+                      {LOGIN_COPY.fields.email.label}
+                    </FieldLabel>
                     <Input
                       id="login-email"
                       type="email"
                       autoComplete="email"
-                      placeholder="johndoe@amazon.com"
+                      placeholder={LOGIN_COPY.fields.email.placeholder}
                       {...form.register("email")}
                     />
                     <FieldError>
@@ -127,12 +126,14 @@ export default function LoginPage() {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="login-password">Password</FieldLabel>
+                    <FieldLabel htmlFor="login-password">
+                      {LOGIN_COPY.fields.password.label}
+                    </FieldLabel>
                     <Input
                       id="login-password"
                       type="password"
                       autoComplete="current-password"
-                      placeholder="Enter your password"
+                      placeholder={LOGIN_COPY.fields.password.placeholder}
                       {...form.register("password")}
                     />
                     <FieldError>

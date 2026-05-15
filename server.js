@@ -1,5 +1,6 @@
 import compression from "compression";
 import express from "express";
+import helmet from "helmet";
 import morgan from "morgan";
 
 // Short-circuit the type-checking of the built output.
@@ -11,6 +12,61 @@ const app = express();
 
 app.use(compression());
 app.disable("x-powered-by");
+
+// Security headers (Helmet).
+// Neon Auth handles session cookies.
+if (!DEVELOPMENT) console.log("Enabling production security middleware");
+
+const neonAuthOrigin = (() => {
+  try {
+    return process.env.VITE_NEON_AUTH_URL
+      ? new URL(process.env.VITE_NEON_AUTH_URL).origin
+      : null;
+  } catch {
+    return null;
+  }
+})();
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "default-src": ["'self'"],
+        "script-src": [
+          "'self'",
+          // Vite dev mode needs eval for HMR.
+          ...(DEVELOPMENT ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
+        ],
+        "style-src": [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+        ],
+        "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
+        "img-src": ["'self'", "data:", "blob:", "https://images.unsplash.com"],
+        "connect-src": [
+          "'self'",
+          ...(neonAuthOrigin ? [neonAuthOrigin] : []),
+          ...(DEVELOPMENT ? ["ws://localhost:*", "http://localhost:*"] : []),
+        ],
+        "frame-ancestors": ["'none'"],
+        "base-uri": ["'self'"],
+        "form-action": ["'self'"],
+        ...(DEVELOPMENT ? {} : { "upgrade-insecure-requests": [] }),
+      },
+    },
+    strictTransportSecurity: DEVELOPMENT
+      ? false
+      : { maxAge: 63072000, includeSubDomains: true, preload: true },
+    // Allow cross-origin images (Unsplash hero shots) - I will remove later
+    // when I switch to local images.
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    // SPA navigation needs same-origin embedding for the dev tools panel.
+    crossOriginEmbedderPolicy: false,
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  }),
+);
 
 if (DEVELOPMENT) {
   console.log("Starting development server");
