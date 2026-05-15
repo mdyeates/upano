@@ -44,7 +44,11 @@ function AuthAltAction({ prompt, linkLabel, to }: AltActionConfig) {
     <>
       <div className="mx-auto mt-6 max-w-xl px-4 text-center text-sm text-muted-foreground">
         {prompt}{" "}
-        <Link to={to} className="text-brand-300 hover:text-brand-900">
+        <Link
+          to={to}
+          prefetch="intent"
+          className="text-brand-300 hover:text-brand-900"
+        >
           {linkLabel}
         </Link>
       </div>

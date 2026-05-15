@@ -5,11 +5,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteLoaderData,
+  type ShouldRevalidateFunctionArgs,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { ThemeProvider, themeBootstrapScript } from "~/lib/theme";
+import { ThemeProvider } from "~/lib/theme";
+import { getTheme } from "~/lib/theme.server";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -24,15 +27,39 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+/**
+ * Reads the theme cookie so we can apply the right.
+ */
+export async function loader({ request }: Route.LoaderArgs) {
+  const theme = await getTheme(request);
+  return { theme };
+}
+
+/**
+ * The theme cookie only changes when the user toggles, and the toggle
+ * action already updates state optimistically.
+ * Without this opt-out, every action on every route would
+ * refetch root for no reason.
+ */
+export function shouldRevalidate({
+  formAction,
+  defaultShouldRevalidate,
+}: ShouldRevalidateFunctionArgs) {
+  // Only revalidate when /theme was the action target.
+  if (formAction === "/theme") return true;
+  return defaultShouldRevalidate;
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const data = useRouteLoaderData<typeof loader>("root");
+  const theme = data?.theme ?? "light";
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={theme} style={{ colorScheme: theme }}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body>
         {children}
@@ -43,9 +70,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+export default function App({ loaderData }: Route.ComponentProps) {
   return (
-    <ThemeProvider>
+    <ThemeProvider initialTheme={loaderData.theme}>
       <Outlet />
     </ThemeProvider>
   );

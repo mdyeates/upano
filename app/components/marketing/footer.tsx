@@ -1,52 +1,16 @@
 import { Link } from "react-router";
 
-const columns: Array<{
-  title: string;
-  links: Array<{ label: string; href: string; external?: boolean }>;
-}> = [
-  {
-    title: "About the product",
-    links: [
-      { label: "Features", href: "#features" },
-      { label: "How it compares", href: "#how-it-compares" },
-      { label: "FAQ", href: "#faq" },
-    ],
-  },
-  {
-    title: "Engineering Links",
-    links: [
-      {
-        label: "Repository",
-        href: "https://github.com/mdyeates/BugTriageApp",
-        external: true,
-      },
-      {
-        label: "Pull requests",
-        href: "https://github.com/mdyeates/BugTriageApp/pulls",
-        external: true,
-      },
-      {
-        label: "Issues",
-        href: "https://github.com/mdyeates/BugTriageApp/issues",
-        external: true,
-      },
-      {
-        label: "CI status",
-        href: "https://github.com/mdyeates/BugTriageApp/actions",
-        external: true,
-      },
-    ],
-  },
-  {
-    title: "Your Account",
-    links: [
-      { label: "Sign in", href: "/login" },
-      { label: "Create account", href: "/register" },
-    ],
-  },
-];
+import type { FooterColumn } from "~/content/marketing";
 
-export function FooterSection() {
+export function FooterSection({
+  tagline,
+  credit,
+  columns,
+}: {
+  tagline: string;
+  credit: string;
+  columns: FooterColumn[];
+}) {
   return (
     <footer className="bg-brand-100 dark:bg-brand-100">
       <div className="container mx-auto max-w-6xl px-4 py-16">
@@ -59,10 +23,7 @@ export function FooterSection() {
               />
               Upano
             </Link>
-            <p className="mt-3 text-sm text-muted-foreground">
-              An internal platform designed to track bugs at scale, giving your
-              team clear visibility to triage them efficiently.
-            </p>
+            <p className="mt-3 text-sm text-muted-foreground">{tagline}</p>
           </div>
 
           {columns.map((col) => (
@@ -110,7 +71,7 @@ export function FooterSection() {
 
         <div className="mt-12 flex flex-col gap-2 border-t border-border/60 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Upano</p>
-          <p>Personal Project built by Michael Yeates</p>
+          <p>{credit}</p>
         </div>
       </div>
     </footer>

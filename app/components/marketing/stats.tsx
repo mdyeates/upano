@@ -1,34 +1,14 @@
 import { Reveal, RevealItem } from "~/components/marketing/reveal";
 import { TickUpNumber } from "~/components/marketing/tick-up-number";
+import type { Metric, MetricFormat } from "~/content/marketing";
 
-const metrics: Array<{
-  to: number;
-  label: string;
-  format: (n: number) => string;
-}> = [
-  {
-    to: 6,
-    label: "User roles enforced",
-    format: (n) => `${Math.round(n)}`,
-  },
-  {
-    to: 12,
-    label: "Status transitions audited",
-    format: (n) => `${Math.round(n)}`,
-  },
-  {
-    to: 100,
-    label: "OWASP top 10 covered",
-    format: (n) => `${Math.round(n)}%`,
-  },
-  {
-    to: 0,
-    label: "Records ever silently changed",
-    format: () => "0",
-  },
-];
+const formatters: Record<MetricFormat, (n: number) => string> = {
+  integer: (n) => `${Math.round(n)}`,
+  percent: (n) => `${Math.round(n)}%`,
+  "literal-zero": () => "0",
+};
 
-export function StatsSection() {
+export function StatsSection({ metrics }: { metrics: Metric[] }) {
   return (
     <section className="bg-brand-50/60 dark:bg-brand-50/60">
       <div className="container mx-auto max-w-6xl px-4 py-16">
@@ -40,7 +20,7 @@ export function StatsSection() {
             >
               <TickUpNumber
                 to={m.to}
-                format={m.format}
+                format={formatters[m.format]}
                 className="font-heading text-4xl font-bold tracking-tight tabular-nums text-brand-900 sm:text-5xl"
               />
               <div className="mt-2 text-sm text-muted-foreground">

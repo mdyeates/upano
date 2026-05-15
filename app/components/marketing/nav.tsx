@@ -4,40 +4,22 @@ import {
   SparklesIcon,
   WorkflowIcon,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { useState } from "react";
 import { Link } from "react-router";
+
 import { ThemeSwitcher } from "~/components/kibo-ui/theme-switcher";
 import { Button } from "~/components/ui/button";
 import { DiscoverTabs } from "~/components/uselayouts/discover-tabs";
+import type { NavIconKey, NavTab } from "~/content/marketing";
 import { useTheme } from "~/lib/theme";
 
-const navTabs = [
-  {
-    id: "features",
-    label: "Features",
-    icon: SparklesIcon,
-    anchor: "features",
-    color: "text-primary",
-    bg: "bg-secondary",
-  },
-  {
-    id: "how-it-works",
-    label: "How it compares",
-    icon: WorkflowIcon,
-    anchor: "how-it-works",
-    color: "text-primary",
-    bg: "bg-secondary",
-  },
-  {
-    id: "faq",
-    label: "FAQ",
-    icon: HelpCircleIcon,
-    anchor: "faq",
-    color: "text-primary",
-    bg: "bg-secondary",
-  },
-] as const;
+const ICONS: Record<NavIconKey, LucideIcon> = {
+  sparkles: SparklesIcon,
+  workflow: WorkflowIcon,
+  helpCircle: HelpCircleIcon,
+};
 
 const SCROLL_THRESHOLD = 80;
 
@@ -46,7 +28,7 @@ const fadeTransition = {
   ease: [0.4, 0, 0.2, 1] as [number, number, number, number],
 };
 
-export function MarketingNav() {
+export function MarketingNav({ tabs }: { tabs: NavTab[] }) {
   const { theme, setTheme } = useTheme();
   const [condensed, setCondensed] = useState(false);
   const { scrollY } = useScroll();
@@ -55,6 +37,15 @@ export function MarketingNav() {
     if (!condensed && y > SCROLL_THRESHOLD) setCondensed(true);
     else if (condensed && y < SCROLL_THRESHOLD - 10) setCondensed(false);
   });
+
+  const resolvedTabs = tabs.map((t) => ({
+    id: t.id,
+    label: t.label,
+    icon: ICONS[t.iconKey],
+    anchor: t.anchor,
+    color: t.color,
+    bg: t.bg,
+  }));
 
   return (
     <>
@@ -89,10 +80,12 @@ export function MarketingNav() {
               size="pill-sm"
               className="hidden sm:inline-flex"
             >
-              <Link to="/login">Login</Link>
+              <Link to="/login" prefetch="intent">
+                Login
+              </Link>
             </Button>
             <Button asChild size="pill-sm" className="group">
-              <Link to="/register">
+              <Link to="/register" prefetch="intent">
                 Get started
                 <ArrowRightIcon className="ml-1 size-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
@@ -103,10 +96,7 @@ export function MarketingNav() {
 
       <div className="pointer-events-none fixed inset-x-0 top-2 z-50 hidden justify-center md:flex">
         <div className="pointer-events-auto">
-          <DiscoverTabs
-            items={navTabs as unknown as (typeof navTabs)[number][]}
-            glass={condensed}
-          />
+          <DiscoverTabs items={resolvedTabs} glass={condensed} />
         </div>
       </div>
     </>

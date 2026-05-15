@@ -2,10 +2,10 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
+import { useFetcher } from "react-router";
 
 export type Theme = "light" | "dark";
 
@@ -16,40 +16,34 @@ type ThemeContextValue = {
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
-const STORAGE_KEY = "bta-theme";
 
-function readStoredTheme(): Theme {
-  if (typeof window === "undefined") {
-    return "light";
-  }
-  const v = window.localStorage.getItem(STORAGE_KEY);
-  if (v === "light" || v === "dark") {
-    return v;
-  }
-  return "light";
-}
+export function ThemeProvider({
+  initialTheme,
+  children,
+}: {
+  initialTheme: Theme;
+  children: React.ReactNode;
+}) {
+  const fetcher = useFetcher();
+  const [theme, setThemeState] = useState<Theme>(initialTheme);
 
-function applyThemeClass(resolved: "light" | "dark") {
-  if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  root.classList.remove("light", "dark");
-  root.classList.add(resolved);
-  root.style.colorScheme = resolved;
-}
-
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
-
-  useEffect(() => {
-    applyThemeClass(theme);
-  }, [theme]);
-
-  const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    }
-  }, []);
+  const setTheme = useCallback(
+    (next: Theme) => {
+      setThemeState(next);
+      // Apply class immediately so toggle feels instant. The next
+      // SSR render will confirm via the cookie loader.
+      if (typeof document !== "undefined") {
+        const root = document.documentElement;
+        root.classList.remove("light", "dark");
+        root.classList.add(next);
+        root.style.colorScheme = next;
+      }
+      const fd = new FormData();
+      fd.set("theme", next);
+      fetcher.submit(fd, { method: "post", action: "/theme" });
+    },
+    [fetcher],
+  );
 
   const value = useMemo<ThemeContextValue>(
     () => ({
@@ -72,12 +66,3 @@ export function useTheme() {
   }
   return ctx;
 }
-
-/**
- * Inline blocking script that reads localStorage and sets the html
- * class BEFORE React hydrates. Prevents the white-flash-on-load when
- * the user has chosen dark mode.
- *
- * Render this inside <head> via dangerouslySetInnerHTML.
- */
-export const themeBootstrapScript = `(function(){try{var k='bta-theme';var v=localStorage.getItem(k);var t=(v==='light'||v==='dark')?v:'light';var d=document.documentElement;d.classList.remove('light','dark');d.classList.add(t);d.style.colorScheme=t;}catch(e){}})();`;

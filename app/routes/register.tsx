@@ -4,6 +4,7 @@ import { AuthFormError, AuthPageShell } from "~/components/auth/auth-shell";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { MultiStepForm } from "~/components/uselayouts/multi-step-form";
+import { REGISTER_COPY } from "~/content/auth";
 import { registerSchema, type RegisterValues } from "~/lib/auth-schemas";
 import {
   authCookieHeaders,
@@ -16,11 +17,8 @@ import type { Route } from "./+types/register";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Register — Upano" },
-    {
-      name: "description",
-      content: "Create an Upano account for your Amazon team.",
-    },
+    { title: REGISTER_COPY.meta.title },
+    { name: "description", content: REGISTER_COPY.meta.description },
   ];
 }
 
@@ -87,13 +85,9 @@ export default function RegisterPage() {
 
   return (
     <AuthPageShell
-      title="Create your Upano account"
-      description="Two short steps. Your audit trail starts the moment your first bug lands."
-      altAction={{
-        prompt: "Already have an account?",
-        linkLabel: "Log in",
-        to: "/login",
-      }}
+      title={REGISTER_COPY.shell.title}
+      description={REGISTER_COPY.shell.description}
+      altAction={REGISTER_COPY.shell.altAction}
     >
       <MultiStepForm<RegisterValues>
         schema={registerSchema}
@@ -110,12 +104,12 @@ export default function RegisterPage() {
         }}
         submitting={submitting}
         labels={{
-          finish: "Register",
+          finish: REGISTER_COPY.submitLabel,
         }}
         steps={[
           {
-            title: "Who are you?",
-            description: "These details set up your account.",
+            title: REGISTER_COPY.steps.profile.title,
+            description: REGISTER_COPY.steps.profile.description,
             fieldsToValidate: ["name", "email", "password", "confirmPassword"],
             render: (form) => {
               const errors = form.formState.errors;
@@ -124,11 +118,13 @@ export default function RegisterPage() {
               return (
                 <>
                   <Field>
-                    <FieldLabel htmlFor="reg-name">Full name</FieldLabel>
+                    <FieldLabel htmlFor="reg-name">
+                      {REGISTER_COPY.fields.name.label}
+                    </FieldLabel>
                     <Input
                       id="reg-name"
                       autoComplete="name"
-                      placeholder="John Doe"
+                      placeholder={REGISTER_COPY.fields.name.placeholder}
                       {...form.register("name")}
                     />
                     <FieldError>
@@ -137,12 +133,14 @@ export default function RegisterPage() {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="reg-email">Work email</FieldLabel>
+                    <FieldLabel htmlFor="reg-email">
+                      {REGISTER_COPY.fields.email.label}
+                    </FieldLabel>
                     <Input
                       id="reg-email"
                       type="email"
                       autoComplete="email"
-                      placeholder="johndoe@amazon.com"
+                      placeholder={REGISTER_COPY.fields.email.placeholder}
                       {...form.register("email")}
                     />
                     <FieldError>
@@ -151,12 +149,14 @@ export default function RegisterPage() {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="reg-password">Password</FieldLabel>
+                    <FieldLabel htmlFor="reg-password">
+                      {REGISTER_COPY.fields.password.label}
+                    </FieldLabel>
                     <Input
                       id="reg-password"
                       type="password"
                       autoComplete="new-password"
-                      placeholder="Enter your password"
+                      placeholder={REGISTER_COPY.fields.password.placeholder}
                       {...form.register("password")}
                     />
                     <FieldError>
@@ -167,13 +167,15 @@ export default function RegisterPage() {
 
                   <Field>
                     <FieldLabel htmlFor="reg-confirm">
-                      Confirm password
+                      {REGISTER_COPY.fields.confirmPassword.label}
                     </FieldLabel>
                     <Input
                       id="reg-confirm"
                       type="password"
                       autoComplete="new-password"
-                      placeholder="Confirm your password"
+                      placeholder={
+                        REGISTER_COPY.fields.confirmPassword.placeholder
+                      }
                       {...form.register("confirmPassword")}
                     />
                     <FieldError>
@@ -186,8 +188,8 @@ export default function RegisterPage() {
             },
           },
           {
-            title: "Last bit",
-            description: "How would you like to be shown to your teammates?",
+            title: REGISTER_COPY.steps.display.title,
+            description: REGISTER_COPY.steps.display.description,
             fieldsToValidate: ["displayName"],
             render: (form) => {
               const errors = form.formState.errors;
@@ -195,19 +197,25 @@ export default function RegisterPage() {
               return (
                 <>
                   <Field>
-                    <FieldLabel htmlFor="reg-display">Display name</FieldLabel>
+                    <FieldLabel htmlFor="reg-display">
+                      {REGISTER_COPY.fields.displayName.label}
+                    </FieldLabel>
                     <Input
                       id="reg-display"
-                      placeholder={fallback || "How your name appears in bugs"}
+                      placeholder={
+                        fallback || REGISTER_COPY.fields.displayName.placeholder
+                      }
                       {...form.register("displayName")}
                     />
                     <FieldError>{errors.displayName?.message}</FieldError>
                   </Field>
 
                   <p className="text-xs text-muted-foreground">
-                    Your role starts as{" "}
-                    <span className="font-medium">Reporter</span>. An admin can
-                    promote you to SDE or Admin once you join a team.
+                    {REGISTER_COPY.roleExplainer.prefix}
+                    <span className="font-medium">
+                      {REGISTER_COPY.roleExplainer.role}
+                    </span>
+                    {REGISTER_COPY.roleExplainer.suffix}
                   </p>
                   {actionData?.formError && (
                     <AuthFormError message={actionData.formError} />

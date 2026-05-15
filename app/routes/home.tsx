@@ -1,5 +1,3 @@
-import type { Route } from "./+types/home";
-
 import { CompareSection } from "~/components/marketing/compare";
 import { CtaSection } from "~/components/marketing/cta";
 import { FaqSection } from "~/components/marketing/faq";
@@ -10,6 +8,9 @@ import { HeroSection } from "~/components/marketing/hero";
 import { MarketingNav } from "~/components/marketing/nav";
 import { StatsSection } from "~/components/marketing/stats";
 import { FeatureCarousel } from "~/components/uselayouts/feature-carousel";
+import { MARKETING_CONTENT } from "~/content/marketing";
+
+import type { Route } from "./+types/home";
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -22,56 +23,47 @@ export function meta(_: Route.MetaArgs) {
   ];
 }
 
-const carouselItems = [
-  {
-    id: "01",
-    title: "Triage queue",
-    description:
-      "Group new bugs by priority and severity. Bulk-assign to an SDE, transition state, comment, all without leaving the keyboard.",
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1600&auto=format&fit=crop",
-    imageAlt: "Upano queue view showing prioritised list of open bugs",
-  },
-  {
-    id: "02",
-    title: "Bug detail",
-    description:
-      "Description, attachments, transition history, and the full audit log of every change to the bug, all in one scrollable view.",
-    image:
-      "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=1600&auto=format&fit=crop",
-    imageAlt: "Bug detail page with status, assignee, and audit timeline",
-  },
-  {
-    id: "03",
-    title: "Audit & reports",
-    description:
-      "Time-windowed audit export, per-engineer triage throughput, mean-time-to-resolve. Manager-ready out of the box.",
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1600&auto=format&fit=crop",
-    imageAlt: "Reports dashboard showing audit log export and team throughput",
-  },
-];
+/**
+ * TODO:
+ * Check if DB has enough storage to store all strings.
+ * Will follow-up if I have the time, this is fine for now.
+ * Would be fetched from loader,
+ * if we were to fetch from DB instead of content files.
+ */
+export async function loader() {
+  return MARKETING_CONTENT;
+}
 
-export default function Home() {
+export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <div className="min-h-screen bg-background pt-16 text-foreground">
-      <MarketingNav />
+      <MarketingNav tabs={loaderData.navTabs} />
       <main>
-        <HeroSection />
-        <StatsSection />
-        <FeaturesSection />
-        <FeatureRowsSection />
+        <HeroSection content={loaderData.hero} />
+        <StatsSection metrics={loaderData.metrics} />
+        <FeaturesSection
+          header={loaderData.featuresHeader}
+          features={loaderData.features}
+        />
+        <FeatureRowsSection rows={loaderData.featureRows} />
         <FeatureCarousel
-          heading="Three views into the same data."
-          items={carouselItems}
-          className={""}
+          heading={loaderData.carouselHeading}
+          items={loaderData.carouselItems}
+          className=""
           autoPlayMs={5000}
         />
-        <CompareSection />
-        <FaqSection />
-        <CtaSection />
+        <CompareSection
+          header={loaderData.compareHeader}
+          rows={loaderData.compareRows}
+        />
+        <FaqSection header={loaderData.faqHeader} items={loaderData.faqs} />
+        <CtaSection content={loaderData.cta} />
       </main>
-      <FooterSection />
+      <FooterSection
+        tagline={loaderData.footerTagline}
+        credit={loaderData.footerCredit}
+        columns={loaderData.footerColumns}
+      />
     </div>
   );
 }

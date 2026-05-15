@@ -1,33 +1,37 @@
 import { ArrowRightIcon } from "lucide-react";
 import { Link } from "react-router";
-import { Button } from "~/components/ui/button";
 
-export function HeroSection() {
+import { Button } from "~/components/ui/button";
+import type { HeroContent } from "~/content/marketing";
+
+export function HeroSection({ content }: { content: HeroContent }) {
   return (
     <section className="relative overflow-hidden bg-background">
       <div className="container mx-auto max-w-6xl px-4 py-20 lg:py-28">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <h1 className="font-heading text-balance text-5xl font-bold tracking-tight text-brand-900 sm:text-6xl lg:text-7xl">
-              Every bug.
-              <br />
-              Every change.
-              <br />
-              Forever.
+              {content.title.map((line, i) => (
+                <span key={line}>
+                  {line}
+                  {i < content.title.length - 1 && <br />}
+                </span>
+              ))}
             </h1>
 
             <p className="max-w-xl text-lg text-muted-foreground">
-              Upano helps your team track bugs in production. Built for software
-              teams that can&apos;t afford to lose context.
+              {content.body}
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
               <Button size="pill-sm" variant="outline" asChild>
-                <a href="#how-it-works">See how it compares</a>
+                <a href={content.secondaryCta.href}>
+                  {content.secondaryCta.label}
+                </a>
               </Button>
               <Button asChild size="pill-sm" className="group">
-                <Link to="/register">
-                  Get started
+                <Link to={content.primaryCta.to} prefetch="intent">
+                  {content.primaryCta.label}
                   <ArrowRightIcon className="ml-1 size-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </Button>
@@ -37,8 +41,8 @@ export function HeroSection() {
           <div className="relative">
             <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-border shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1600&auto=format&fit=crop"
-                alt="A laptop screen showing a data dashboard with charts and metrics"
+                src={content.image.src}
+                alt={content.image.alt}
                 className="h-full w-full object-cover"
                 loading="eager"
               />
