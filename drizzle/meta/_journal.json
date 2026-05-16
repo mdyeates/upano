@@ -8,6 +8,27 @@
       "when": 1732076135211,
       "tag": "0000_short_donald_blake",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778952934532,
+      "tag": "0001_colossal_wolverine",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778952966267,
+      "tag": "0002_yummy_bastion",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778953030855,
+      "tag": "0003_illegal_puppet_master",
+      "breakpoints": true
     }
   ]
 }
