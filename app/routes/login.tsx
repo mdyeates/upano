@@ -5,13 +5,13 @@ import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { MultiStepForm } from "~/components/uselayouts/multi-step-form";
 import { LOGIN_COPY } from "~/content/auth";
-import { loginSchema, type LoginValues } from "~/lib/auth-schemas";
+import { loginSchema, type LoginValues } from "~/lib/auth/auth-schemas";
 import {
   authCookieHeaders,
   getSession,
   mapAuthError,
   postAuth,
-} from "~/lib/auth.server";
+} from "~/lib/auth/auth.server";
 
 import type { Route } from "./+types/login";
 

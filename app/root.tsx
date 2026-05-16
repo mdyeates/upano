@@ -11,8 +11,8 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { ThemeProvider } from "~/lib/theme";
-import { getTheme } from "~/lib/theme.server";
+import { ThemeProvider } from "~/lib/theme/theme";
+import { getTheme } from "~/lib/theme/theme.server";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

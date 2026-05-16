@@ -1,6 +1,6 @@
 import { redirect } from "react-router";
 
-import { authCookieHeaders, postAuth } from "~/lib/auth.server";
+import { authCookieHeaders, postAuth } from "~/lib/auth/auth.server";
 
 import type { Route } from "./+types/logout";
 

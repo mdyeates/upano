@@ -1,7 +1,10 @@
 import { Form } from "react-router";
 
 import { Button } from "~/components/ui/button";
-import { getUser, requireUserMiddleware } from "~/lib/auth-middleware.server";
+import {
+  getUser,
+  requireUserMiddleware,
+} from "~/lib/auth/auth-middleware.server";
 
 import type { Route } from "./+types/dashboard";
 

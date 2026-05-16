@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 // =============================================================================
-// Enums 
+// Enums
 // =============================================================================
 
 export const userRoleEnum = pgEnum("user_role", ["reporter", "sde", "admin"]);
@@ -149,7 +149,7 @@ export const comments = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "no action" }),
     body: text("body").notNull(),
-    parentId: text("parent_id"), 
+    parentId: text("parent_id"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

@@ -2,7 +2,7 @@
 
 import { motion, type Variants } from "motion/react";
 import type { ReactNode } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/utils/utils";
 
 export function Reveal({
   children,

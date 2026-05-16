@@ -1,15 +1,3 @@
-/**
- * Server-side auth helpers for Neon Auth.
- *
- * Why a server module: our /login, /register, and /logout routes use
- * RR7 actions to forward credentials to Neon Auth's REST API. Doing
- * this server-side instead of client-side gives us:
- *   - Zod schema validation that runs on the server.
- *   - No risk of accidentally leaking API credentials to the client.
- *   - Forms that work without JS.
- *   - Loader-level redirects so /dashboard never flashes for logged-out
- *     users (server redirects before any HTML ships).
- */
 import { redirect } from "react-router";
 
 const AUTH_URL = process.env.VITE_NEON_AUTH_URL;
