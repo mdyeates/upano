@@ -29,6 +29,48 @@
       "when": 1778953030855,
       "tag": "0003_illegal_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778957844588,
+      "tag": "0004_friendly_goblin_queen",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778975597171,
+      "tag": "0005_melodic_smiling_tiger",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779107987014,
+      "tag": "0006_f10_admin_role_management",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779119207430,
+      "tag": "0007_comments_body_length_1000",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779120615469,
+      "tag": "0008_bugs_title_length_100",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1779121326616,
+      "tag": "0009_bugs_title_length_50",
+      "breakpoints": true
     }
   ]
 }

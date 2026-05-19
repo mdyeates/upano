@@ -47,6 +47,8 @@ export const auditEventTypeEnum = pgEnum("audit_event_type", [
   "priority_changed",
   "severity_changed",
   "assignee_changed",
+  "title_changed",
+  "description_changed",
   "comment_added",
   "comment_edited",
   "comment_deleted",
@@ -58,29 +60,18 @@ export const auditEventTypeEnum = pgEnum("audit_event_type", [
 // users - Application users (reporters, sdes, admins)
 // =============================================================================
 
-export const users = pgTable(
-  "users",
-  {
-    id: text("id").primaryKey(),
-    email: text("email").notNull().unique(),
-    name: text("name").notNull(),
-    displayName: text("display_name"),
-    role: userRoleEnum("role").notNull().default("reporter"),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => [
-    check(
-      "users_name_length",
-      sql`char_length(${table.name}) BETWEEN 1 AND 100`,
-    ),
-  ],
-);
+export const users = pgTable("users", {
+  id: text("id").primaryKey(),
+  role: userRoleEnum("role").notNull().default("reporter"),
+  displayName: text("display_name"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
 
 // =============================================================================
 // bugs - Display structure: BUG-0001, BUG-1234 etc.
@@ -118,7 +109,7 @@ export const bugs = pgTable(
     ),
     check(
       "bugs_title_length",
-      sql`char_length(${table.title}) BETWEEN 1 AND 200`,
+      sql`char_length(${table.title}) BETWEEN 1 AND 50`,
     ),
     check(
       "bugs_description_length",
@@ -158,7 +149,7 @@ export const comments = pgTable(
   (table) => [
     check(
       "comments_body_length",
-      sql`char_length(${table.body}) BETWEEN 1 AND 10000`,
+      sql`char_length(${table.body}) BETWEEN 1 AND 1000`,
     ),
     foreignKey({
       columns: [table.parentId],
@@ -178,9 +169,9 @@ export const auditEvents = pgTable(
   "audit_events",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    bugId: integer("bug_id")
-      .notNull()
-      .references(() => bugs.id, { onDelete: "no action" }),
+    bugId: integer("bug_id").references(() => bugs.id, {
+      onDelete: "no action",
+    }),
     actorId: text("actor_id")
       .notNull()
       .references(() => users.id, { onDelete: "no action" }),
@@ -198,6 +189,16 @@ export const auditEvents = pgTable(
     index("audit_events_actor_idx").on(table.actorId),
     index("audit_events_created_at_idx").on(table.createdAt),
     index("audit_events_type_idx").on(table.eventType),
+    // role_changed events target a user (bugId NULL),
+    // every other event type targets a bug (bugId NOT NULL).
+    check(
+      "audit_events_scope_matches_type",
+      sql`(
+        (${table.eventType} = 'role_changed' AND ${table.bugId} IS NULL)
+        OR
+        (${table.eventType} <> 'role_changed' AND ${table.bugId} IS NOT NULL)
+      )`,
+    ),
   ],
 );
 
