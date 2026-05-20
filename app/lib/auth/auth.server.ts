@@ -1,18 +1,8 @@
 import { redirect } from "react-router";
+import { createHash } from "node:crypto";
 
 const AUTH_URL = process.env.VITE_NEON_AUTH_URL;
-
-function originFor(request: Request): string {
-  const proto = request.headers.get("x-forwarded-proto");
-  const host =
-    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  if (proto && host) return `${proto}://${host}`;
-  return new URL(request.url).origin;
-}
-
-if (!AUTH_URL) {
-  console.error("VITE_NEON_AUTH_URL is not set. Auth REST calls will fail.");
-}
+const SESSION_CACHE_TTL_MS = 30_000;
 
 export type AuthUser = {
   id: string;
@@ -26,16 +16,45 @@ export type AuthSession = {
   session: Record<string, unknown>;
 };
 
+function originFor(request: Request): string {
+  const proto = request.headers.get("x-forwarded-proto");
+  const host =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (proto && host) return `${proto}://${host}`;
+  return new URL(request.url).origin;
+}
+
+if (!AUTH_URL) {
+  console.error("VITE_NEON_AUTH_URL is not set. Auth REST calls will fail.");
+}
+
 /**
  * Forward the inbound request's Cookie header to Neon Auth so it can
  * verify the session. Returns null if no session.
  */
+
+const sessionCache = new Map<
+  string,
+  { session: AuthSession | null; expiresAt: number }
+>();
+
+function hashCookie(cookie: string): string {
+  return createHash("sha256").update(cookie).digest("hex");
+}
+
 export async function getSession(
   request: Request,
 ): Promise<AuthSession | null> {
   if (!AUTH_URL) return null;
   const cookie = request.headers.get("cookie");
   if (!cookie) return null;
+
+  const cacheKey = hashCookie(cookie);
+  const now = Date.now();
+  const cached = sessionCache.get(cacheKey);
+  if (cached && cached.expiresAt > now) {
+    return cached.session;
+  }
 
   const upstream = await fetch(`${AUTH_URL}/get-session`, {
     method: "GET",
@@ -44,9 +63,23 @@ export async function getSession(
       origin: originFor(request),
     },
   });
-  if (!upstream.ok) return null;
-  const body = (await upstream.json()) as AuthSession | null;
-  return body;
+  if (!upstream.ok) {
+    sessionCache.set(cacheKey, {
+      session: null,
+      expiresAt: now + SESSION_CACHE_TTL_MS,
+    });
+    return null;
+  }
+  const session = (await upstream.json()) as AuthSession | null;
+  sessionCache.set(cacheKey, {
+    session,
+    expiresAt: now + SESSION_CACHE_TTL_MS,
+  });
+  return session;
+}
+
+export function invalidateSessionCache(cookie: string): void {
+  sessionCache.delete(hashCookie(cookie));
 }
 
 /**
