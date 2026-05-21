@@ -7,10 +7,16 @@ import { FooterSection } from "~/components/marketing/footer";
 import { HeroSection } from "~/components/marketing/hero";
 import { MarketingNav } from "~/components/marketing/nav";
 import { StatsSection } from "~/components/marketing/stats";
-import { FeatureCarousel } from "~/components/uselayouts/feature-carousel";
+import BentoCard from "~/components/bento-card";
 import { MARKETING_CONTENT } from "~/content/marketing";
 
 import type { Route } from "./+types/home";
+
+export function headers(_: Route.HeadersArgs) {
+  return {
+    "Cache-Control": "public, max-age=300, s-maxage=300",
+  };
+}
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -46,12 +52,22 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           features={loaderData.features}
         />
         <FeatureRowsSection rows={loaderData.featureRows} />
-        <FeatureCarousel
-          heading={loaderData.carouselHeading}
-          items={loaderData.carouselItems}
-          className=""
-          autoPlayMs={5000}
-        />
+        <section className="bg-background">
+          <div className="container mx-auto max-w-6xl px-4 py-20 lg:py-28">
+            <div className="mx-auto mb-12 max-w-2xl text-center">
+              <p className="text-sm font-medium uppercase tracking-wide text-brand-500">
+                Product preview
+              </p>
+              <h2 className="mt-2 font-heading text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+                Four surfaces. One source of truth.
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                Click a tab to peek at each; Dashboard, Bugs, Detail, Admin.
+              </p>
+            </div>
+            <BentoCard />
+          </div>
+        </section>
         <CompareSection
           header={loaderData.compareHeader}
           rows={loaderData.compareRows}

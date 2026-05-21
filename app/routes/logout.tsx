@@ -1,6 +1,10 @@
 import { redirect } from "react-router";
 
-import { authCookieHeaders, postAuth } from "~/lib/auth/auth.server";
+import {
+  authCookieHeaders,
+  invalidateSessionCache,
+  postAuth,
+} from "~/lib/auth/auth.server";
 
 import type { Route } from "./+types/logout";
 
@@ -12,7 +16,11 @@ import type { Route } from "./+types/logout";
  * to make it idempotent (calling /logout multiple times is fine).
  */
 export async function action({ request }: Route.ActionArgs) {
+  const cookie = request.headers.get("cookie");
   const { setCookie } = await postAuth(request, "/sign-out", {});
+  if (cookie) {
+    invalidateSessionCache(cookie);
+  }
   return redirect("/", { headers: authCookieHeaders(setCookie) });
 }
 
