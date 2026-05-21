@@ -11,7 +11,7 @@ export function FaqSection({
   header,
   items,
 }: {
-  header: { eyebrow: string; title: string; body: string };
+  header: { eyebrow: string; title: string; };
   items: FaqItem[];
 }) {
   return (
@@ -25,7 +25,6 @@ export function FaqSection({
             <h2 className="mt-2 font-heading text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
               {header.title}
             </h2>
-            <p className="mt-4 text-muted-foreground">{header.body}</p>
           </div>
         </Reveal>
 
