@@ -153,7 +153,6 @@ describe("validateTransition()", () => {
 });
 
 describe("spot checks", () => {
-
   it("should not be allowed to move from 'new' straight to 'resolved' (any role)", () => {
     for (const role of ALL_ROLES) {
       expect(canTransition("new", "resolved", role)).toBe(false);
