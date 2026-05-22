@@ -42,7 +42,11 @@ export type Metric = {
 };
 
 export const METRICS: Metric[] = [
-  { to: 3, label: "Unique role permissions enforced server-side", format: "integer" },
+  {
+    to: 3,
+    label: "Unique role permissions enforced server-side",
+    format: "integer",
+  },
   {
     to: 3,
     label: "CI/CD pipeline workflows running on every change",

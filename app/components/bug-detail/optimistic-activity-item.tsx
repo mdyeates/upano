@@ -9,7 +9,7 @@ import { initials } from "~/lib/utils";
 /**
  * Activity timeline row representing an not-yet-saved
  * mutation (skeleton with submitted value).
- * 
+ *
  * It is replaced by the real item once the loader revalidates.
  */
 export function OptimisticActivityItem({ event }: { event: OptimisticEvent }) {

@@ -295,9 +295,7 @@ function BugRow({
 
 function StatusPill({ status }: { status: Bug["status"] }) {
   return (
-    <Pill className="capitalize text-xs">
-      {status.replaceAll("_", " ")}
-    </Pill>
+    <Pill className="capitalize text-xs">{status.replaceAll("_", " ")}</Pill>
   );
 }
 

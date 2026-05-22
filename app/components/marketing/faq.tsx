@@ -11,7 +11,7 @@ export function FaqSection({
   header,
   items,
 }: {
-  header: { eyebrow: string; title: string; };
+  header: { eyebrow: string; title: string };
   items: FaqItem[];
 }) {
   return (

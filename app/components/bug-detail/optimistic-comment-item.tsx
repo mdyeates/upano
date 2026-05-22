@@ -5,7 +5,7 @@ import { initials } from "~/lib/utils";
 /**
  * Comment representing a not-yet-saved
  * mutation (skeleton with submitted value).
- * 
+ *
  * It is replaced by the real comment once the loader revalidates.
  */
 export function OptimisticCommentItem({

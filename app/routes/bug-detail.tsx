@@ -257,7 +257,7 @@ export default function BugDetail({ loaderData }: Route.ComponentProps) {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const flashedCreatedRef = useRef(false);
- 
+
   useEffect(() => {
     if (flashedCreatedRef.current) return;
     if (searchParams.get("created") !== "1") return;
@@ -267,7 +267,6 @@ export default function BugDetail({ loaderData }: Route.ComponentProps) {
     next.delete("created");
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
-
 
   const allFetchers = useFetchers();
   const optimisticEvents = buildOptimisticEvents({
@@ -540,11 +539,7 @@ export default function BugDetail({ loaderData }: Route.ComponentProps) {
 // =============================================================================
 
 function StatusPill({ status }: { status: Bug["status"] }) {
-  return (
-    <Pill className="capitalize">
-      {status.replaceAll("_", " ")}
-    </Pill>
-  );
+  return <Pill className="capitalize">{status.replaceAll("_", " ")}</Pill>;
 }
 
 function priorityLabel(p: Bug["priority"]): string {

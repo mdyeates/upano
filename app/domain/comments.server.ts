@@ -5,7 +5,6 @@ import { fetchUsersByIds } from "~/lib/auth/user.service";
 
 import { ForbiddenError, NotFoundError, ValidationError } from "./_errors";
 
-
 function validateBody(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
   const trimmed = raw.trim();
@@ -182,7 +181,7 @@ export async function remove({
 }
 
 // =============================================================================
-// Loader-side: list comments for a bug 
+// Loader-side: list comments for a bug
 // =============================================================================
 
 /**
