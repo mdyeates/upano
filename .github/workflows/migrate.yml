@@ -16,11 +16,21 @@ concurrency:
   group: migrate-${{ github.workflow }}
   cancel-in-progress: false
 
+# Default least-privilege token. CodeQL: actions/missing-workflow-permissions.
+# Docs: https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+permissions:
+  contents: read
+
 jobs:
   migrate:
     name: Run drizzle-kit migrate
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # `actions/setup-node` with `cache: npm` reads/writes the GitHub Actions
+    # cache, requiring `actions: write` on top of the workflow default.
+    permissions:
+      contents: read
+      actions: write
 
     # Production references GitHub environment.
     # Docs: https://docs.github.com/en/actions/deployment/targeting-different-environments
