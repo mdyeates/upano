@@ -13,9 +13,6 @@ export function CtaSection({ content }: { content: typeof CtaContent }) {
           <h2 className="font-heading text-3xl font-bold tracking-tight text-brand-900 sm:text-5xl">
             {content.title}
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-            {content.body}
-          </p>
           <div className="mt-8 flex justify-center gap-3">
             <Button asChild size="pill-sm" className="group">
               <Link to={content.primary.to} prefetch="intent">

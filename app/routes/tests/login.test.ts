@@ -20,8 +20,9 @@ import { VALID_PASSWORD, VALID_EMAIL, SESSION_COOKIE } from "./constants";
 const post = (fields: Record<string, string>) =>
   submit(action, "http://localhost:3000/login", fields);
 const { postAuthMock } = vi.hoisted(() => ({ postAuthMock: vi.fn() }));
-vi.mock("~/lib/auth.server", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("~/lib/auth.server")>();
+vi.mock("~/lib/auth/auth.server", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("~/lib/auth/auth.server")>();
   return {
     ...actual,
     postAuth: postAuthMock,

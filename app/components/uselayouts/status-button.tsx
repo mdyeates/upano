@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import type { ComponentProps } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/utils/utils";
 import { Button } from "~/components/ui/button";
 
 export type StatusButtonState = "idle" | "loading" | "success" | "error";

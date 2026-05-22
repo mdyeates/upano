@@ -1,6 +1,7 @@
 import { ArrowRightIcon } from "lucide-react";
 import { Link } from "react-router";
 
+import BentoCard from "~/components/bento-card";
 import { Button } from "~/components/ui/button";
 import type { HeroContent } from "~/content/marketing";
 
@@ -39,14 +40,7 @@ export function HeroSection({ content }: { content: HeroContent }) {
           </div>
 
           <div className="relative">
-            <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-border shadow-xl">
-              <img
-                src={content.image.src}
-                alt={content.image.alt}
-                className="h-full w-full object-cover"
-                loading="eager"
-              />
-            </div>
+            <BentoCard />
             <div
               aria-hidden
               className="absolute -inset-x-12 -inset-y-12 -z-10 rounded-3xl bg-gradient-to-tr from-primary/5 via-transparent to-primary/10 blur-3xl"

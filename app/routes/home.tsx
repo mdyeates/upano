@@ -7,10 +7,15 @@ import { FooterSection } from "~/components/marketing/footer";
 import { HeroSection } from "~/components/marketing/hero";
 import { MarketingNav } from "~/components/marketing/nav";
 import { StatsSection } from "~/components/marketing/stats";
-import { FeatureCarousel } from "~/components/uselayouts/feature-carousel";
 import { MARKETING_CONTENT } from "~/content/marketing";
 
 import type { Route } from "./+types/home";
+
+export function headers(_: Route.HeadersArgs) {
+  return {
+    "Cache-Control": "public, max-age=300, s-maxage=300",
+  };
+}
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -46,12 +51,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           features={loaderData.features}
         />
         <FeatureRowsSection rows={loaderData.featureRows} />
-        <FeatureCarousel
-          heading={loaderData.carouselHeading}
-          items={loaderData.carouselItems}
-          className=""
-          autoPlayMs={5000}
-        />
         <CompareSection
           header={loaderData.compareHeader}
           rows={loaderData.compareRows}

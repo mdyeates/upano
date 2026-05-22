@@ -1,0 +1,2 @@
+ALTER TYPE "public"."audit_event_type" ADD VALUE 'title_changed' BEFORE 'comment_added';--> statement-breakpoint
+ALTER TYPE "public"."audit_event_type" ADD VALUE 'description_changed' BEFORE 'comment_added';

@@ -1,5 +1,5 @@
 import { data } from "react-router";
-import { themeCookie } from "~/lib/theme.server";
+import { themeCookie } from "~/lib/theme/theme.server";
 import type { Route } from "./+types/theme";
 
 /**

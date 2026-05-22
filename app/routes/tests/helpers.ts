@@ -1,5 +1,12 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 
+import type { AuthUser } from "~/lib/auth/auth.server";
+import {
+  localUserContext,
+  userContext,
+} from "~/lib/auth/auth-middleware.server";
+import type { User } from "~/database/schema";
+
 /**
  * Test helpers for RR7 actions/loaders.
  *
@@ -110,3 +117,74 @@ export const load = <R>(
   loader: (args: LoaderFunctionArgs) => Promise<R>,
   url: string,
 ): Promise<R> => loader(makeLoaderArgs(new Request(url, { method: "GET" })));
+
+/**
+ * Build a fake context with a populated localUser + authUser, the way
+ * requireUserMiddleware would set them in production. Use this for
+ * tests that exercise loaders/actions calling getLocalUser/getUser.
+ */
+export function makeAuthedContext({
+  localUser,
+  authUser,
+}: {
+  localUser: User;
+  authUser?: Partial<AuthUser>;
+}): ActionFunctionArgs["context"] {
+  const store = new Map<unknown, unknown>();
+  const fullAuthUser: AuthUser = {
+    id: localUser.id,
+    email: "test@example.com",
+    name: "Test User",
+    image: null,
+    ...authUser,
+  } as AuthUser;
+  store.set(localUserContext, localUser);
+  store.set(userContext, fullAuthUser);
+  return {
+    get: (c: unknown) => store.get(c) ?? null,
+    set: (c: unknown, v: unknown) => {
+      store.set(c, v);
+    },
+  } as unknown as ActionFunctionArgs["context"];
+}
+
+/**
+ * Build a populated ActionFunctionArgs with an authed context.
+ */
+export function makeAuthedActionArgs(
+  request: Request,
+  ctx: { localUser: User; authUser?: Partial<AuthUser> },
+  pattern = "/",
+  params: Record<string, string> = {},
+): ActionFunctionArgs {
+  return {
+    request,
+    url: new URL(request.url),
+    pattern,
+    params,
+    context: makeAuthedContext(ctx),
+  };
+}
+
+/**
+ * Invoke an action as a logged-in user. Combines submit + makeAuthedContext.
+ */
+export const submitAuthed = <R>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: (args: any) => Promise<R>,
+  url: string,
+  ctx: {
+    localUser: User;
+    authUser?: Partial<AuthUser>;
+    params?: Record<string, string>;
+  },
+  fields: Record<string, string>,
+): Promise<R> =>
+  action(
+    makeAuthedActionArgs(
+      postRequest(url, fields),
+      { localUser: ctx.localUser, authUser: ctx.authUser },
+      "/",
+      ctx.params,
+    ),
+  );

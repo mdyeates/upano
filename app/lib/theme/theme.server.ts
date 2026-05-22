@@ -29,11 +29,11 @@ const isTheme = (value: unknown): value is Theme =>
 
 /**
  * Read the theme from the request's Cookie header. Defaults to
- * "light" if the cookie is absent or malformed.
+ * "dark" if the cookie is absent or malformed.
  */
 export async function getTheme(request: Request): Promise<Theme> {
   const cookieHeader = request.headers.get("Cookie");
-  if (!cookieHeader) return "light";
+  if (!cookieHeader) return "dark";
   const value = await themeCookie.parse(cookieHeader);
-  return isTheme(value) ? value : "light";
+  return isTheme(value) ? value : "dark";
 }

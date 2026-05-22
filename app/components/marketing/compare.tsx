@@ -39,11 +39,14 @@ export function CompareSection({
                 <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">
                   Feature
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-medium text-brand-900">
+                <th className="w-[120px] px-6 py-4 text-center text-sm font-medium text-brand-900">
                   Upano
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-medium text-muted-foreground">
-                  Slack&nbsp;+&nbsp;shared&nbsp;doc
+                <th className="w-[120px] px-6 py-4 text-center text-sm font-medium text-muted-foreground">
+                  Slack
+                </th>
+                <th className="w-[140px] px-6 py-4 text-center text-sm font-medium text-muted-foreground">
+                  Shared&nbsp;doc
                 </th>
               </tr>
             </thead>
@@ -61,11 +64,20 @@ export function CompareSection({
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <Mark value={r.bta} />
+                  <td className="px-6 py-4 text-center align-middle">
+                    <div className="flex justify-center">
+                      <Mark value={r.bta} />
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <Mark value={r.alt} />
+                  <td className="px-6 py-4 text-center align-middle">
+                    <div className="flex justify-center">
+                      <Mark value={r.slack} />
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center align-middle">
+                    <div className="flex justify-center">
+                      <Mark value={r.doc} />
+                    </div>
                   </td>
                 </tr>
               ))}

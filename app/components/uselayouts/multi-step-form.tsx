@@ -39,7 +39,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/utils/utils";
 
 export type MultiStepFormStep<TValues extends FieldValues> = {
   title: string;
@@ -59,12 +59,6 @@ export type MultiStepFormProps<TValues extends FieldValues> = {
     continue?: string;
     finish?: string;
   };
-  /**
-   * When true, the final-step button shows the SaveButton's animated
-   * loading state. Wire this from the parent's `useNavigation().state`
-   * for RR7 form submissions:
-   *   submitting={navigation.state === "submitting"}
-   */
   submitting?: boolean;
   className?: string;
   formError?: string | null;
@@ -85,12 +79,6 @@ export function MultiStepForm<TValues extends FieldValues>({
   const [ref, bounds] = useMeasure();
 
   const form = useForm<TValues>({
-    // zodResolver expects a ZodType whose input type matches
-    // FieldValues, but ZodType<TValues> has `unknown` input — generic
-    // variance prevents direct assignment. The cast on input + the
-    // assertion on output are pure type-level lubrication; the
-    // runtime resolver is correct. Shows up under v8 RHF + Zod 4 +
-    // @hookform/resolvers 5.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema as any) as unknown as Resolver<TValues>,
     defaultValues,

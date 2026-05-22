@@ -4,7 +4,7 @@ import { useControllableState } from "@radix-ui/react-use-controllable-state";
 import { Moon, Sun } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useSyncExternalStore } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/utils/utils";
 
 const themes = [
   {

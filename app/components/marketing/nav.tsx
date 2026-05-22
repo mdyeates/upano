@@ -13,7 +13,7 @@ import { ThemeSwitcher } from "~/components/kibo-ui/theme-switcher";
 import { Button } from "~/components/ui/button";
 import { DiscoverTabs } from "~/components/uselayouts/discover-tabs";
 import type { NavIconKey, NavTab } from "~/content/marketing";
-import { useTheme } from "~/lib/theme";
+import { useTheme } from "~/lib/theme/theme";
 
 const ICONS: Record<NavIconKey, LucideIcon> = {
   sparkles: SparklesIcon,

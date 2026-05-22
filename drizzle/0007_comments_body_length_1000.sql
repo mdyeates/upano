@@ -1,0 +1,2 @@
+ALTER TABLE "comments" DROP CONSTRAINT "comments_body_length";--> statement-breakpoint
+ALTER TABLE "comments" ADD CONSTRAINT "comments_body_length" CHECK (char_length("comments"."body") BETWEEN 1 AND 1000);

@@ -3,7 +3,7 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/utils/utils";
 
 export type FeatureCarouselItem = {
   id: string;
