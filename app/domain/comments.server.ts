@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, or, sql } from "drizzle-orm";
 import { database } from "~/database/context";
 import { auditEvents, bugs, comments, type User } from "~/database/schema";
 import { fetchUsersByIds } from "~/lib/auth/user.service";
@@ -166,16 +166,24 @@ export async function remove({
     throw new ForbiddenError("You can only delete your own comments");
   }
 
+  const rootId = original.parentId ?? original.id;
+
   await db.transaction(async (tx) => {
     await tx
       .update(comments)
       .set({ deletedAt: new Date() })
-      .where(eq(comments.id, commentId));
+      .where(
+        and(
+          eq(comments.bugId, bugId),
+          isNull(comments.deletedAt),
+          or(eq(comments.id, rootId), eq(comments.parentId, rootId)),
+        ),
+      );
     await tx.insert(auditEvents).values({
       bugId,
       actorId,
       eventType: "comment_deleted",
-      metadata: { commentId },
+      metadata: { commentId, rootId },
     });
   });
 }

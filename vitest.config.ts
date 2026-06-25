@@ -24,6 +24,14 @@ export default defineConfig({
         ".react-router/**",
         "drizzle/**",
         "**/*.config.{ts,js}",
+        // Presentational / UI-only code not covered by the unit suite.
+        // Coverage focuses on server actions, domain logic and the state.
+        "app/components/**",
+        "app/lib/hooks/**",
+        "app/lib/utils/**",
+        "app/root.tsx",
+        "app/routes.ts",
+        "app/content/**",
       ],
     },
   },
